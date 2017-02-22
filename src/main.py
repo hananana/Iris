@@ -4,6 +4,7 @@ import click
 import os.path
 import logging
 import shutil
+import subprocess
 
 
 home = os.environ['HOME']
@@ -17,6 +18,7 @@ def cmd(project_path, unity):
     if os.path.exists(os.path.join(project_path, 'Assets')):
         copy_unity_project(project_path)
         insert_builder_file()
+        build(unity)
     else:
         logging.error("specify unity project path")
 
@@ -47,6 +49,10 @@ def insert_builder_file():
     stream.writelines('}\n')
     stream.writelines('}')
     stream.close
+
+
+def build(unity):
+    subprocess.check_call('ls')
 
 
 if __name__ == '__main__':

@@ -2,13 +2,13 @@
 
 export iOS/Android project from unity in cli.
 
-# how to use
+# Install
 
 ```sh
 pip install git+https://github.com/hananana/iris.git
 ```
 
-# how to build
+# How to build
 
 ```sh
 pyenv install 3.6.0

@@ -14,6 +14,6 @@ setup(
     ],
     entry_points='''
         [console_scripts]
-        iris=iris:main
+        iris=iris:cmd
     ''',
 )

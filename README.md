@@ -8,11 +8,11 @@ export iOS/Android project from unity in cli.
 pip install git+https://github.com/hananana/iris.git
 ```
 
-# How to build
+# How to setup project
 
 ```sh
 pyenv install 3.6.0
-pyvenv venv  
+python -m venv venv
 source venv/bin/activate  
 pip install -r requirements.txt  
 ```

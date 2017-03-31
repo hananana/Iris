@@ -14,14 +14,21 @@ temp_dir = os.path.join(home, '.iris')
 @click.command()
 @click.argument('project_path', type=click.Path(exists=True))
 @click.argument('platform')
-@click.option('--unity', '-u', default='/Applications/Unity/Unity.app')
-def cmd(project_path, platform, unity):
-    if not check_platform:
-        logging.error('platform must iOS or Android')
+@click.option('--unity_path', '-u', default='/Applications/Unity/Unity.app')
+def cmd(project_path, platform, unity_path):
+    abs_project_path = convert_abs_path(project_path)
+
+    if not os.path.exists(abs_project_path):
+        logging.error("specify unity project path")
+        return
+    
+    abs_unity_path = convert_abs_path(unity_path)
+    if not os.path.exists(abs_unity_path):
+        logging.error("-u or --unity_path option is specify Unity.app path")
         return
 
-    if not os.path.exists(os.path.join(project_path, 'Assets')):
-        logging.error("specify unity project path")
+    if not check_platform:
+        logging.error('platform must iOS or Android')
         return
 
     copy_unity_project(project_path)
@@ -96,6 +103,13 @@ def pod_install_if_needed(project_path):
     os.chdir(exported_path)
     pod_command = 'pod install'
     subprocess.check_call(pod_command.split(' '))
+
+
+def convert_abs_path(target)
+    if os.path.isabs(target):
+        return target
+    else:
+        return os.path.abspath(target)
 
 
 if __name__ == '__main__':

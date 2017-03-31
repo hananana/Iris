@@ -9,8 +9,12 @@ import subprocess
 
 home = os.environ['HOME']
 temp_path = os.path.join(home, '.iris')
+
 ios = 'iOS'
 android = 'Android'
+
+xcodeproj = '.xcodeproj'
+xcworkspace = '.xcworkspace'
 
 @click.command()
 @click.option('--project_path', type=click.Path(exists=True))
@@ -27,8 +31,32 @@ def cmd(project_path, platform, unity_path, archive, archive_path, archive_optio
 
 
 def archive_project(archive_path, archive_option):
-    print(archive_path)
-    print(archive_option)
+    abs_archive_path = convert_abs_path(archive_path)
+    project_name = os.path.basename(abs_archive_path)
+    name, ext = os.path.splitext(project_name)
+
+    if not ext == xcodeproj or ext == xcworkspace:
+        logging.error('archive_path option must specify .xcworkspace or .xcodeproj')
+        return
+
+    option = ''
+    if ext == xcodeproj:
+        option = '-project' 
+    else:
+        option = '-workspace'
+
+    command = 'xcodebuild archive ' + option
+    command += ' ' + abs_archive_path
+    command += ' -sdk iphoneos'
+    command += ' -scheme Unity-iPhone'
+    command += ' -configuration Release'
+    command += ' -archivePath'
+    dir = os.path.dirname(abs_archive_path)
+    command += ' ' + os.path.join(dir, 'Build/Unity-iPhone.xcarchive')
+    command += ' CODE_SIGN_IDENTITY='
+    command += ' PROVISIONING_PROFILE='
+
+#     subprocess.check_call(command.split(' '))
 
 
 def export_project(project_path, unity_path, platform):
@@ -52,7 +80,6 @@ def export_project(project_path, unity_path, platform):
     make_build_dir_if_needed(abs_project_path)
     do_export(unity_path, platform, abs_project_path)
     pod_install_if_needed(abs_project_path)
-
 
 
 def copy_unity_project(path):

@@ -25,7 +25,7 @@ def cmd(project_path, platform, unity, output, pod):
     if os.path.exists(os.path.join(project_path, 'Assets')):
         copy_unity_project(project_path)
         insert_builder_file(project_path)
-        build(unity, platform, pod)
+        export(unity, platform, pod)
         if pod:
             pod_install(project_path)
     else:
@@ -75,7 +75,7 @@ def insert_builder_file(project_path):
     stream.close
 
 
-def build(unity, platform, pod):
+def export(unity, platform, pod):
     method = ''
     if platform == 'iOS':
         method = 'BuildiOS'

@@ -15,9 +15,8 @@ temp_dir = os.path.join(home, '.iris')
 @click.argument('project_path', type=click.Path(exists=True))
 @click.argument('platform')
 @click.option('--unity', '-u', default='/Applications/Unity/Unity.app')
-@click.option('--output', '-o', default='Build/iOS/')
 @click.option('--pod/--no-pod', default=False)
-def cmd(project_path, platform, unity, output, pod):
+def cmd(project_path, platform, unity, pod):
     if not check_platform:
         logging.error('platform must iOS or Android')
         return

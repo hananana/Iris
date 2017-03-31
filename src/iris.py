@@ -12,28 +12,30 @@ temp_dir = os.path.join(home, '.iris')
 
 
 @click.command()
-@click.argument('project_path', type=click.Path(exists=True))
-@click.argument('platform')
-@click.option('--unity_path', '-u', default='/Applications/Unity/Unity.app')
-def cmd(project_path, platform, unity_path):
+@click.option('--project_path', type=click.Path(exists=True))
+@click.option('--platform', type=click.Path(exists=True))
+@click.option('--unity_path', default='/Applications/Unity/Unity.app')
+@click.option('--archive', type=click.Path(exists=True))
+@click.option('--archive_option', type=click.Path(exists=True))
+def cmd(project_path, platform, unity_path, archive):
     abs_project_path = convert_abs_path(project_path)
 
     if not os.path.exists(abs_project_path):
-        logging.error("specify unity project path")
+        logging.error("--project_path option must specify unity project path")
         return
     
     abs_unity_path = convert_abs_path(unity_path)
     if not os.path.exists(abs_unity_path):
-        logging.error("-u or --unity_path option is specify Unity.app path")
+        logging.error("--unity_path option is specify Unity.app path")
         return
 
     if not check_platform:
-        logging.error('platform must iOS or Android')
+        logging.error('--platform option must iOS or Android')
         return
 
     copy_unity_project(project_path)
     insert_builder_file(project_path)
-    export(unity, platform)
+    export(unity, platform, abs_project_path)
     pod_install_if_needed(project_path)
 
 
@@ -80,7 +82,7 @@ def insert_builder_file(project_path):
     stream.close
 
 
-def export(unity, platform, pod):
+def export(unity, platform, project_path):
     method = ''
     if platform == 'iOS':
         method = 'BuildiOS'
@@ -89,8 +91,9 @@ def export(unity, platform, pod):
 
     command = os.path.join(unity, 'Contents/MacOS/Unity')
     arg1 = ' -quit -projectPath ' + temp_dir
-    arg2 = ' -executeMethod IrisBuilder.' + method
-    subprocess.check_call((command + arg1 + arg2).split(' '))
+    arg2 = ' -logFile ' + os.path.join(project_path, 'build.log')
+    arg3 = ' -executeMethod IrisBuilder.' + method
+    subprocess.check_call((command + arg1 + arg2 + arg2).split(' '))
 
 
 def pod_install_if_needed(project_path):

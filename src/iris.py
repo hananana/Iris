@@ -9,9 +9,6 @@ import subprocess
 
 home = os.environ['HOME']
 temp_path = os.path.join(home, '.iris')
-ios_build_path = 'Build/iOS'
-android_build_path = 'Build/Android'
-
 
 @click.command()
 @click.option('--project_path', type=click.Path(exists=True))
@@ -36,7 +33,7 @@ def cmd(project_path, platform, unity_path, archive, archive_option):
         return
 
     copy_unity_project(project_path)
-    insert_builder_file(project_path)
+    insert_builder_file(project_path, platform)
     make_build_dir_if_needed(project_path)
     export(unity_path, platform, abs_project_path)
     pod_install_if_needed(project_path)
@@ -64,8 +61,6 @@ def insert_builder_file(project_path):
     editor_dir = os.path.join(assets_dir, 'Editor')
     os.makedirs(editor_dir)
     os.chdir(editor_dir)
-    ios_build_path = os.path.join(project_path, ios_build_path)
-    android_build_path = os.path.join(project_path, android_build_path)
     stream = open('IrisBuilder.cs', 'w')
     stream.writelines('using System.Linq;\n')
     stream.writelines('using UnityEngine;\n')
@@ -73,12 +68,12 @@ def insert_builder_file(project_path):
     stream.writelines('public class IrisBuilder{\n')
     stream.writelines('public static void BuildiOS(){\n')
     stream.writelines('BuildPipeline.BuildPlayer(EditorBuildSettings.scenes,"')
-    stream.writelines(ios_build_path)
+    stream.writelines(build_path(project_path, 'iOS'))
     stream.writelines('", BuildTarget.iOS, BuildOptions.None);\n')
     stream.writelines('}\n')
     stream.writelines('public static void BuildAndroid(){\n')
     stream.writelines('BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, ')
-    stream.writelines('"' + android_build_path + '", BuildTarget.Android,')
+    stream.writelines('"' + build_path(project_path, 'Android') + '", BuildTarget.Android,')
     stream.writelines('BuildOptions.AcceptExternalModificationsToPlayer);\n')
     stream.writelines('}\n')
     stream.writelines('}')
@@ -86,13 +81,15 @@ def insert_builder_file(project_path):
 
 
 def make_build_dir_if_needed(project_path):
-    abs_ios_build_path = os.path.join(project_path, ios_build_path)
-    abs_android_build_path = os.path.join(project_path, android_build_path)
-    if not os.path.exists(abs_ios_build_path):
-        os.makedirs(abs_ios_build_path)
+    build_dir = os.path.join(project_path, 'Build')
+    if not os.path.exists(build_dir):
+        os.mkdirs(build_dir)
 
-    if not os.path.exists(abs_android_build_path):
-        os.makedirs(abs_android_build_path)
+    if not os.path.exists(build_path(project_path, 'iOS')):
+        os.makedirs(build_path(project_path, 'iOS'))
+
+    if not os.path.exists(build_path(project_path, 'Android')):
+        os.makedirs(build_path(project_path, 'Android'))
 
 
 def export(unity, platform, project_path):
@@ -110,13 +107,12 @@ def export(unity, platform, project_path):
 
 
 def pod_install_if_needed(project_path):
-    exported_path = os.path.join(project_path, ios_build_path)
-    podfile_path = os.path.join(exported_path, 'Podfile')
+    podfile_path = os.path.join(build_path(project_path, 'iOS'), 'Podfile')
 
     if not os.path.exists(podfile_path):
         return
 
-    os.chdir(exported_path)
+    os.chdir(build_path(project_path, 'iOS'))
     pod_command = 'pod install'
     subprocess.check_call(pod_command.split(' '))
 
@@ -126,6 +122,10 @@ def convert_abs_path(target):
         return target
     else:
         return os.path.abspath(target)
+
+
+def build_path(project_path, platform):
+    pass
 
 
 if __name__ == '__main__':

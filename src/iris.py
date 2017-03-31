@@ -105,7 +105,7 @@ def pod_install_if_needed(project_path):
     subprocess.check_call(pod_command.split(' '))
 
 
-def convert_abs_path(target)
+def convert_abs_path(target):
     if os.path.isabs(target):
         return target
     else:

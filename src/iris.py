@@ -34,11 +34,11 @@ def cmd(project_path, platform, unity_path, archive, archive_option):
         logging.error('--platform option must iOS or Android')
         return
 
-    copy_unity_project(project_path)
-    insert_builder_file(project_path)
-    make_build_dir_if_needed(project_path)
+    copy_unity_project(abs_project_path)
+    insert_builder_file(abs_project_path)
+    make_build_dir_if_needed(abs_project_path)
     export(unity_path, platform, abs_project_path)
-    pod_install_if_needed(project_path)
+    pod_install_if_needed(abs_project_path)
 
 
 def copy_unity_project(path):
@@ -108,11 +108,6 @@ def export(unity, platform, project_path):
     arg3 = ' -executeMethod IrisBuilder.' + method
     subprocess.check_call((command + arg1 + arg2 + arg3).split(' '))
 
-    stream = open(build_log_path)
-    log = stream.read()
-    stream.close
-    print(log)
-
 
 def pod_install_if_needed(project_path):
     podfile_path = os.path.join(build_path(project_path, ios), 'Podfile')
@@ -129,7 +124,9 @@ def convert_abs_path(target):
     if os.path.isabs(target):
         return target
     else:
-        return os.path.abspath(target)
+        ret = os.path.abspath(target)
+        print(ret)
+        return ret
 
 
 def build_path(project_path, platform):

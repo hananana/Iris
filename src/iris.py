@@ -35,7 +35,7 @@ def cmd(project_path, platform, unity_path, archive, archive_option):
         return
 
     copy_unity_project(project_path)
-    insert_builder_file(project_path, platform)
+    insert_builder_file(project_path)
     make_build_dir_if_needed(project_path)
     export(unity_path, platform, abs_project_path)
     pod_install_if_needed(project_path)
@@ -85,7 +85,7 @@ def insert_builder_file(project_path):
 def make_build_dir_if_needed(project_path):
     build_dir = os.path.join(project_path, 'Build')
     if not os.path.exists(build_dir):
-        os.mkdirs(build_dir)
+        os.makedirs(build_dir)
 
     if not os.path.exists(build_path(project_path, ios)):
         os.makedirs(build_path(project_path, ios))
@@ -101,11 +101,17 @@ def export(unity, platform, project_path):
     else:
         method = 'BuildAndroid'
 
+    build_log_path = os.path.join(project_path, 'build.log')
     command = os.path.join(unity, 'Contents/MacOS/Unity')
     arg1 = ' -quit -projectPath ' + temp_path
-    arg2 = ' -logFile ' + os.path.join(project_path, 'build.log')
+    arg2 = ' -logFile ' + build_log_path
     arg3 = ' -executeMethod IrisBuilder.' + method
-    subprocess.check_call((command + arg1 + arg2 + arg2).split(' '))
+    subprocess.check_call((command + arg1 + arg2 + arg3).split(' '))
+
+    stream = open(build_log_path)
+    log = stream.read()
+    stream.close
+    print(log)
 
 
 def pod_install_if_needed(project_path):
@@ -127,7 +133,10 @@ def convert_abs_path(target):
 
 
 def build_path(project_path, platform):
-    pass
+    if platform == ios:
+        return os.path.join(project_path, 'Build/iOS')
+    else:
+        return os.path.join(project_path, 'Build/Android')
 
 
 if __name__ == '__main__':

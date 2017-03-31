@@ -63,11 +63,25 @@ def archive_project(archive_path, archive_option):
     command.append('Release')
     command.append('-archivePath')
     dir = os.path.dirname(abs_archive_path)
-    command.append(os.path.join(dir, 'Build/Unity-iPhone.xcarchive'))
+    xcarchive_path = os.path.join(dir, 'Build/Unity-iPhone.xcarchive') 
+    command.append(xcarchive_path)
     code_sign_identity_command = 'CODE_SIGN_IDENTITY=' + option_map[code_sign_identity_key]
     command.append(code_sign_identity_command)
     command.append('PROVISIONING_PROFILE_SPECIFIER=' + option_map[provisioning_key])
     subprocess.check_call(command)
+
+    make_ipa(xcarchive_path, option_map, dir)
+
+
+def make_ipa(xcarchive_path, option_map, base_dir):
+    c = ['xcodebuild', '-exportArchive']
+    c.append('-archivePath')
+    c.append(xcarchive_path)
+    c.append('-exportProvisioningProfile')
+    c.append(option_map[provisioning_key])
+    c.append('-exportPath')
+    c.append(os.path.join(base_dir, 'Build/Unity-iPhone.ipa'))
+    subprocess.check_call(c)
 
 
 def export_project(project_path, unity_path, platform):

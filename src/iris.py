@@ -9,6 +9,8 @@ import subprocess
 
 home = os.environ['HOME']
 temp_path = os.path.join(home, '.iris')
+ios = 'iOS'
+android = 'Android'
 
 @click.command()
 @click.option('--project_path', type=click.Path(exists=True))
@@ -49,9 +51,9 @@ def copy_unity_project(path):
 
 
 def check_platform(platform):
-    if platform == 'iOS':
+    if platform == ios:
         return True
-    if platform == 'Android':
+    if platform == android:
         return True
     return False
 
@@ -68,12 +70,12 @@ def insert_builder_file(project_path):
     stream.writelines('public class IrisBuilder{\n')
     stream.writelines('public static void BuildiOS(){\n')
     stream.writelines('BuildPipeline.BuildPlayer(EditorBuildSettings.scenes,"')
-    stream.writelines(build_path(project_path, 'iOS'))
+    stream.writelines(build_path(project_path, ios))
     stream.writelines('", BuildTarget.iOS, BuildOptions.None);\n')
     stream.writelines('}\n')
     stream.writelines('public static void BuildAndroid(){\n')
     stream.writelines('BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, ')
-    stream.writelines('"' + build_path(project_path, 'Android') + '", BuildTarget.Android,')
+    stream.writelines('"' + build_path(project_path, android) + '", BuildTarget.Android,')
     stream.writelines('BuildOptions.AcceptExternalModificationsToPlayer);\n')
     stream.writelines('}\n')
     stream.writelines('}')
@@ -85,16 +87,16 @@ def make_build_dir_if_needed(project_path):
     if not os.path.exists(build_dir):
         os.mkdirs(build_dir)
 
-    if not os.path.exists(build_path(project_path, 'iOS')):
-        os.makedirs(build_path(project_path, 'iOS'))
+    if not os.path.exists(build_path(project_path, ios)):
+        os.makedirs(build_path(project_path, ios))
 
-    if not os.path.exists(build_path(project_path, 'Android')):
-        os.makedirs(build_path(project_path, 'Android'))
+    if not os.path.exists(build_path(project_path, android)):
+        os.makedirs(build_path(project_path, android))
 
 
 def export(unity, platform, project_path):
     method = ''
-    if platform == 'iOS':
+    if platform == ios:
         method = 'BuildiOS'
     else:
         method = 'BuildAndroid'
@@ -107,12 +109,12 @@ def export(unity, platform, project_path):
 
 
 def pod_install_if_needed(project_path):
-    podfile_path = os.path.join(build_path(project_path, 'iOS'), 'Podfile')
+    podfile_path = os.path.join(build_path(project_path, ios), 'Podfile')
 
     if not os.path.exists(podfile_path):
         return
 
-    os.chdir(build_path(project_path, 'iOS'))
+    os.chdir(build_path(project_path, ios))
     pod_command = 'pod install'
     subprocess.check_call(pod_command.split(' '))
 

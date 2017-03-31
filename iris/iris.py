@@ -15,20 +15,19 @@ temp_dir = os.path.join(home, '.iris')
 @click.argument('project_path', type=click.Path(exists=True))
 @click.argument('platform')
 @click.option('--unity', '-u', default='/Applications/Unity/Unity.app')
-@click.option('--pod/--no-pod', default=False)
-def cmd(project_path, platform, unity, pod):
+def cmd(project_path, platform, unity):
     if not check_platform:
         logging.error('platform must iOS or Android')
         return
 
-    if os.path.exists(os.path.join(project_path, 'Assets')):
-        copy_unity_project(project_path)
-        insert_builder_file(project_path)
-        export(unity, platform, pod)
-        if pod:
-            pod_install(project_path)
-    else:
+    if not os.path.exists(os.path.join(project_path, 'Assets')):
         logging.error("specify unity project path")
+        return
+
+    copy_unity_project(project_path)
+    insert_builder_file(project_path)
+    export(unity, platform)
+    pod_install_if_needed(project_path)
 
 
 def copy_unity_project(path):
@@ -87,8 +86,14 @@ def export(unity, platform, pod):
     subprocess.check_call((command + arg1 + arg2).split(' '))
 
 
-def pod_install(project_path):
-    os.chdir(os.path.join(project_path, 'Build/iOS'))
+def pod_install_if_needed(project_path):
+    exported_path = os.path.join(project_path, 'Build/iOS')
+    podfile_path = os.path.join(exported_path, 'Podfile')
+
+    if not os.path.exists(podfile_path):
+        return
+
+    os.chdir(exported_path)
     pod_command = 'pod install'
     subprocess.check_call(pod_command.split(' '))
 

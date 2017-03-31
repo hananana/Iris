@@ -5,6 +5,7 @@ import os.path
 import logging
 import shutil
 import subprocess
+import toml
 
 
 home = os.environ['HOME']
@@ -15,6 +16,9 @@ android = 'Android'
 
 xcodeproj = '.xcodeproj'
 xcworkspace = '.xcworkspace'
+
+provisioning_key = 'provisioning_profile_specifier'
+code_sign_identity_key = 'code_sign_identity'
 
 @click.command()
 @click.option('--project_path', type=click.Path(exists=True))
@@ -39,24 +43,31 @@ def archive_project(archive_path, archive_option):
         logging.error('archive_path option must specify .xcworkspace or .xcodeproj')
         return
 
-    option = ''
+    abs_archive_option = convert_abs_path(archive_option)
+    option_map = toml.load(open(abs_archive_option))
+
+    target_option = ''
     if ext == xcodeproj:
-        option = '-project' 
+        target_option = '-project' 
     else:
-        option = '-workspace'
+        target_option = '-workspace'
 
-    command = 'xcodebuild archive ' + option
-    command += ' ' + abs_archive_path
-    command += ' -sdk iphoneos'
-    command += ' -scheme Unity-iPhone'
-    command += ' -configuration Release'
-    command += ' -archivePath'
+    command = ['xcodebuild', 'archive']
+    command.append(target_option)
+    command.append(abs_archive_path)
+    command.append('-sdk')
+    command.append('iphoneos')
+    command.append('-scheme')
+    command.append('Unity-iPhone')
+    command.append('-configuration')
+    command.append('Release')
+    command.append('-archivePath')
     dir = os.path.dirname(abs_archive_path)
-    command += ' ' + os.path.join(dir, 'Build/Unity-iPhone.xcarchive')
-    command += ' CODE_SIGN_IDENTITY='
-    command += ' PROVISIONING_PROFILE='
-
-#     subprocess.check_call(command.split(' '))
+    command.append(os.path.join(dir, 'Build/Unity-iPhone.xcarchive'))
+    code_sign_identity_command = 'CODE_SIGN_IDENTITY=' + option_map[code_sign_identity_key]
+    command.append(code_sign_identity_command)
+    command.append('PROVISIONING_PROFILE_SPECIFIER=' + option_map[provisioning_key])
+    subprocess.check_call(command)
 
 
 def export_project(project_path, unity_path, platform):

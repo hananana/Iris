@@ -16,9 +16,22 @@ android = 'Android'
 @click.option('--project_path', type=click.Path(exists=True))
 @click.option('--platform')
 @click.option('--unity_path', default='/Applications/Unity/Unity.app')
-@click.option('--archive', type=click.Path(exists=True))
-@click.option('--archive_option')
-def cmd(project_path, platform, unity_path, archive, archive_option):
+@click.option('--archive', is_flag=True)
+@click.option('--archive_path', type=click.Path(exists=True))
+@click.option('--archive_option', type=click.Path(exists=True))
+def cmd(project_path, platform, unity_path, archive, archive_path, archive_option):
+    if archive:
+        archive_project(archive_path, archive_option)
+    else:
+        export_project(project_path, unity_path, platform)
+
+
+def archive_project(archive_path, archive_option):
+    print(archive_path)
+    print(archive_option)
+
+
+def export_project(project_path, unity_path, platform):
     abs_project_path = convert_abs_path(project_path)
 
     if not os.path.exists(abs_project_path):
@@ -37,8 +50,9 @@ def cmd(project_path, platform, unity_path, archive, archive_option):
     copy_unity_project(abs_project_path)
     insert_builder_file(abs_project_path)
     make_build_dir_if_needed(abs_project_path)
-    export(unity_path, platform, abs_project_path)
+    do_export(unity_path, platform, abs_project_path)
     pod_install_if_needed(abs_project_path)
+
 
 
 def copy_unity_project(path):
@@ -94,7 +108,7 @@ def make_build_dir_if_needed(project_path):
         os.makedirs(build_path(project_path, android))
 
 
-def export(unity, platform, project_path):
+def do_export(unity, platform, project_path):
     method = ''
     if platform == ios:
         method = 'BuildiOS'

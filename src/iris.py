@@ -21,12 +21,12 @@ provisioning_key = 'provisioning_profile_specifier'
 code_sign_identity_key = 'code_sign_identity'
 
 @click.command()
-@click.option('--project_path', type=click.Path(exists=True))
-@click.option('--platform')
-@click.option('--unity_path', default='/Applications/Unity/Unity.app')
-@click.option('--archive', is_flag=True)
-@click.option('--archive_path', type=click.Path(exists=True))
-@click.option('--archive_option', type=click.Path(exists=True))
+@click.option('--project_path', type=click.Path(exists=True), help='path to unity project')
+@click.option('--platform', help='specify iOS or Android')
+@click.option('--unity_path', default='/Applications/Unity/Unity.app', help='path to unity')
+@click.option('--archive', is_flag=True, help='flag for iOS archive')
+@click.option('--archive_path', type=click.Path(exists=True), help='path to .xcodeproj or .xcworkspace')
+@click.option('--archive_option', type=click.Path(exists=True), help='path to .toml')
 def cmd(project_path, platform, unity_path, archive, archive_path, archive_option):
     if archive:
         archive_project(archive_path, archive_option)

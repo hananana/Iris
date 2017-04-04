@@ -104,7 +104,7 @@ def export_project(project_path, unity_path, platform):
     insert_builder_file(abs_project_path)
     make_build_dir_if_needed(abs_project_path)
     do_export(unity_path, platform, abs_project_path)
-    pod_install_if_needed(abs_project_path)
+    pod_install_if_needed(abs_project_path, platform)
 
 
 def copy_unity_project(path):
@@ -175,7 +175,10 @@ def do_export(unity, platform, project_path):
     subprocess.check_call((command + arg1 + arg2 + arg3).split(' '))
 
 
-def pod_install_if_needed(project_path):
+def pod_install_if_needed(project_path, platform):
+    if not platform == ios:
+        return
+
     podfile_path = os.path.join(build_path(project_path, ios), 'Podfile')
 
     if not os.path.exists(podfile_path):

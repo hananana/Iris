@@ -190,9 +190,7 @@ def convert_abs_path(target):
     if os.path.isabs(target):
         return target
     else:
-        ret = os.path.abspath(target)
-        print(ret)
-        return ret
+        return os.path.abspath(target)
 
 
 def build_path(project_path, platform):

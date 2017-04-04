@@ -39,7 +39,7 @@ def archive_project(archive_path, archive_option):
     project_name = os.path.basename(abs_archive_path)
     name, ext = os.path.splitext(project_name)
 
-    if not ext == xcodeproj or ext == xcworkspace:
+    if not ext == xcodeproj and not ext == xcworkspace:
         logging.error('archive_path option must specify .xcworkspace or .xcodeproj')
         return
 

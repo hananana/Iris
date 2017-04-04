@@ -11,6 +11,7 @@ setup(
     license='MIT',
     install_requires=[
         'click',
+        'toml',
     ],
     entry_points='''
         [console_scripts]

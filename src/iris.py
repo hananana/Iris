@@ -9,7 +9,7 @@ import toml
 
 
 home = os.environ['HOME']
-temp_path = os.path.join(home, '.iris')
+tempPath = os.path.join(home, '.iris')
 
 ios = 'iOS'
 android = 'Android'
@@ -17,44 +17,44 @@ android = 'Android'
 xcodeproj = '.xcodeproj'
 xcworkspace = '.xcworkspace'
 
-provisioning_key = 'provisioning_profile_specifier'
-code_sign_identity_key = 'code_sign_identity'
+provisioningKey = 'provisioning_profile_specifier'
+codeSingIdentityKey = 'code_sign_identity'
 
 @click.command()
-@click.option('--project_path', type=click.Path(exists=True), help='path to unity project')
+@click.option('--projectPath', type=click.Path(exists=True), help='path to unity project')
 @click.option('--platform', help='specify iOS or Android')
-@click.option('--unity_path', default='/Applications/Unity/Unity.app', help='path to unity')
+@click.option('--unityPath', default='/Applications/Unity/Unity.app', help='path to unity')
 @click.option('--archive', is_flag=True, help='flag for iOS archive')
-@click.option('--archive_path', type=click.Path(exists=True), help='path to .xcodeproj or .xcworkspace')
-@click.option('--archive_option', type=click.Path(exists=True), help='path to .toml')
-def cmd(project_path, platform, unity_path, archive, archive_path, archive_option):
+@click.option('--archivePath', type=click.Path(exists=True), help='path to .xcodeproj or .xcworkspace')
+@click.option('--archiveOption', type=click.Path(exists=True), help='path to .toml')
+def cmd(projectPath, platform, unityPath, archive, archivePath, archiveOption):
     if archive:
-        archive_project(archive_path, archive_option)
+        archiveProject(archivePath, archiveOption)
     else:
-        export_project(project_path, unity_path, platform)
+        exportProject(projectPath, unityPath, platform)
 
 
-def archive_project(archive_path, archive_option):
-    abs_archive_path = convert_abs_path(archive_path)
-    project_name = os.path.basename(abs_archive_path)
-    name, ext = os.path.splitext(project_name)
+def archiveProject(archivePath, archiveOption):
+    absArchivePath = convertAbsPath(archivePath)
+    projectName = os.path.basename(absArchivePath)
+    name, ext = os.path.splitext(projectName)
 
     if not ext == xcodeproj and not ext == xcworkspace:
-        logging.error('archive_path option must specify .xcworkspace or .xcodeproj')
+        logging.error('archivePath option must specify .xcworkspace or .xcodeproj')
         return
 
-    abs_archive_option = convert_abs_path(archive_option)
-    option_map = toml.load(open(abs_archive_option))
+    absArchiveOption = convertAbsPath(archiveOption)
+    optionMap = toml.load(open(absArchiveOption))
 
-    target_option = ''
+    targetOption = ''
     if ext == xcodeproj:
-        target_option = '-project' 
+        targetOption = '-project' 
     else:
-        target_option = '-workspace'
+        targetOption = '-workspace'
 
     command = ['xcodebuild', 'archive']
-    command.append(target_option)
-    command.append(abs_archive_path)
+    command.append(targetOption)
+    command.append(absArchivePath)
     command.append('-sdk')
     command.append('iphoneos')
     command.append('-scheme')
@@ -62,58 +62,58 @@ def archive_project(archive_path, archive_option):
     command.append('-configuration')
     command.append('Release')
     command.append('-archivePath')
-    dir = os.path.dirname(abs_archive_path)
-    xcarchive_path = os.path.join(dir, 'Build/Unity-iPhone.xcarchive') 
-    command.append(xcarchive_path)
-    code_sign_identity_command = 'CODE_SIGN_IDENTITY=' + option_map[code_sign_identity_key]
-    command.append(code_sign_identity_command)
-    command.append('PROVISIONING_PROFILE_SPECIFIER=' + option_map[provisioning_key])
+    dir = os.path.dirname(absArchivePath)
+    xcarchivePath = os.path.join(dir, 'Build/Unity-iPhone.xcarchive') 
+    command.append(xcarchivePath)
+    codeSignIdentityCommand = 'CODE_SIGN_IDENTITY=' + optionMap[codeSingIdentityKey]
+    command.append(codeSignIdentityCommand)
+    command.append('PROVISIONING_PROFILE_SPECIFIER=' + optionMap[provisioningKey])
     subprocess.check_call(command)
 
-    make_ipa(xcarchive_path, option_map, dir)
+    make_ipa(xcarchivePath, optionMap, dir)
 
 
-def make_ipa(xcarchive_path, option_map, base_dir):
+def make_ipa(xcarchivePath, optionMap, base_dir):
     c = ['xcodebuild', '-exportArchive']
     c.append('-archivePath')
-    c.append(xcarchive_path)
+    c.append(xcarchivePath)
     c.append('-exportProvisioningProfile')
-    c.append(option_map[provisioning_key])
+    c.append(optionMap[provisioningKey])
     c.append('-exportPath')
     c.append(os.path.join(base_dir, 'Build/Unity-iPhone.ipa'))
     subprocess.check_call(c)
 
 
-def export_project(project_path, unity_path, platform):
-    abs_project_path = convert_abs_path(project_path)
+def exportProject(projectPath, unityPath, platform):
+    absProjectPath = convertAbsPath(projectPath)
 
-    if not os.path.exists(abs_project_path):
-        logging.error("--project_path option must specify unity project path")
+    if not os.path.exists(absProjectPath):
+        logging.error("--projectPath option must specify unity project path")
         return
     
-    abs_unity_path = convert_abs_path(unity_path)
-    if not os.path.exists(abs_unity_path):
-        logging.error("--unity_path option is specify Unity.app path")
+    absUnityPath = convertAbsPath(unityPath)
+    if not os.path.exists(absUnityPath):
+        logging.error("--unityPath option is specify Unity.app path")
         return
 
     if not check_platform:
         logging.error('--platform option must iOS or Android')
         return
 
-    copy_unity_project(abs_project_path)
-    insert_builder_file(abs_project_path)
-    make_build_dir_if_needed(abs_project_path)
-    do_export(unity_path, platform, abs_project_path)
-    pod_install_if_needed(abs_project_path, platform)
+    copyUnityProject(absProjectPath)
+    insertBuilderFile(absProjectPath)
+    makeBuildDirIfNeeded(absProjectPath)
+    doExport(unityPath, platform, absProjectPath)
+    podInstallIfNeeded(absProjectPath, platform)
 
 
-def copy_unity_project(path):
+def copyUnityProject(path):
     try:
-        shutil.copytree(path, temp_path)
+        shutil.copytree(path, tempPath)
     except OSError:
-        shutil.rmtree(temp_path)
-        is_symlink = True
-        shutil.copytree(path, temp_path, is_symlink)
+        shutil.rmtree(tempPath)
+        isSymlink = True
+        shutil.copytree(path, tempPath, isSymlink)
 
 
 def check_platform(platform):
@@ -124,8 +124,8 @@ def check_platform(platform):
     return False
 
 
-def insert_builder_file(project_path):
-    assets_dir = os.path.join(temp_path, 'Assets')
+def insertBuilderFile(projectPath):
+    assets_dir = os.path.join(tempPath, 'Assets')
     editor_dir = os.path.join(assets_dir, 'Editor')
     os.makedirs(editor_dir)
     os.chdir(editor_dir)
@@ -136,71 +136,71 @@ def insert_builder_file(project_path):
     stream.writelines('public class IrisBuilder{\n')
     stream.writelines('public static void BuildiOS(){\n')
     stream.writelines('BuildPipeline.BuildPlayer(EditorBuildSettings.scenes,"')
-    stream.writelines(build_path(project_path, ios))
+    stream.writelines(buildPath(projectPath, ios))
     stream.writelines('", BuildTarget.iOS, BuildOptions.None);\n')
     stream.writelines('}\n')
     stream.writelines('public static void BuildAndroid(){\n')
     stream.writelines('BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, ')
-    stream.writelines('"' + build_path(project_path, android) + '", BuildTarget.Android,')
+    stream.writelines('"' + buildPath(projectPath, android) + '", BuildTarget.Android,')
     stream.writelines('BuildOptions.AcceptExternalModificationsToPlayer);\n')
     stream.writelines('}\n')
     stream.writelines('}')
     stream.close
 
 
-def make_build_dir_if_needed(project_path):
-    build_dir = os.path.join(project_path, 'Build')
+def makeBuildDirIfNeeded(projectPath):
+    build_dir = os.path.join(projectPath, 'Build')
     if not os.path.exists(build_dir):
         os.makedirs(build_dir)
 
-    if not os.path.exists(build_path(project_path, ios)):
-        os.makedirs(build_path(project_path, ios))
+    if not os.path.exists(buildPath(projectPath, ios)):
+        os.makedirs(buildPath(projectPath, ios))
 
-    if not os.path.exists(build_path(project_path, android)):
-        os.makedirs(build_path(project_path, android))
+    if not os.path.exists(buildPath(projectPath, android)):
+        os.makedirs(buildPath(projectPath, android))
 
 
-def do_export(unity, platform, project_path):
+def doExport(unity, platform, projectPath):
     method = ''
     if platform == ios:
         method = 'BuildiOS'
     else:
         method = 'BuildAndroid'
 
-    build_log_path = os.path.join(project_path, 'build.log')
+    buildLogPath = os.path.join(projectPath, 'build.log')
     command = os.path.join(unity, 'Contents/MacOS/Unity')
-    arg1 = ' -quit -projectPath ' + temp_path
-    arg2 = ' -logFile ' + build_log_path
+    arg1 = ' -quit -projectPath ' + tempPath
+    arg2 = ' -logFile ' + buildLogPath
     arg3 = ' -executeMethod IrisBuilder.' + method
     subprocess.check_call((command + arg1 + arg2 + arg3).split(' '))
 
 
-def pod_install_if_needed(project_path, platform):
+def podInstallIfNeeded(projectPath, platform):
     if not platform == ios:
         return
 
-    podfile_path = os.path.join(build_path(project_path, ios), 'Podfile')
+    podfilePath = os.path.join(buildPath(projectPath, ios), 'Podfile')
 
-    if not os.path.exists(podfile_path):
+    if not os.path.exists(podfilePath):
         return
 
-    os.chdir(build_path(project_path, ios))
-    pod_command = 'pod install'
-    subprocess.check_call(pod_command.split(' '))
+    os.chdir(buildPath(projectPath, ios))
+    podCommand = 'pod install'
+    subprocess.check_call(podCommand.split(' '))
 
 
-def convert_abs_path(target):
+def convertAbsPath(target):
     if os.path.isabs(target):
         return target
     else:
         return os.path.abspath(target)
 
 
-def build_path(project_path, platform):
+def buildPath(projectPath, platform):
     if platform == ios:
-        return os.path.join(project_path, 'Build/iOS')
+        return os.path.join(projectPath, 'Build/iOS')
     else:
-        return os.path.join(project_path, 'Build/Android')
+        return os.path.join(projectPath, 'Build/Android')
 
 
 if __name__ == '__main__':

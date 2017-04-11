@@ -26,15 +26,16 @@ codeSingIdentityKey = 'code_sign_identity'
 @click.option('--unityPath', default='/Applications/Unity/Unity.app', help='path to unity')
 @click.option('--archive', is_flag=True, help='flag for iOS archive')
 @click.option('--archivePath', type=click.Path(exists=True), help='path to .xcodeproj or .xcworkspace')
-@click.option('--archiveOption', type=click.Path(exists=True), help='path to .toml')
-def cmd(projectPath, platform, unityPath, archive, archivePath, archiveOption):
+@click.option('--archiveOptionPath', type=click.Path(exists=True), help='path to .toml')
+@click.option('--archivePlistPath', type=click.Path(exists=True), help='path to .plist')
+def cmd(projectPath, platform, unityPath, archive, archivePath, archiveOption, archivePlistPath):
     if archive:
-        archiveProject(archivePath, archiveOption)
+        archiveProject(archivePath, archiveOption, archivePlistPath)
     else:
         exportProject(projectPath, unityPath, platform)
 
 
-def archiveProject(archivePath, archiveOption):
+def archiveProject(archivePath, archiveOption, archivePlistPath):
     absArchivePath = convertAbsPath(archivePath)
     projectName = os.path.basename(absArchivePath)
     name, ext = os.path.splitext(projectName)
@@ -70,15 +71,16 @@ def archiveProject(archivePath, archiveOption):
     command.append('PROVISIONING_PROFILE_SPECIFIER=' + optionMap[provisioningKey])
     subprocess.check_call(command)
 
-    make_ipa(xcarchivePath, optionMap, dir)
+    absArchivePlistPaht = convertAbsPath(archivePlistPath)
+    makeIpa(xcarchivePath, dir, absArchivePlistPaht)
 
 
-def make_ipa(xcarchivePath, optionMap, base_dir):
+def makeIpa(xcarchivePath, base_dir, archivePlistPath):
     c = ['xcodebuild', '-exportArchive']
     c.append('-archivePath')
     c.append(xcarchivePath)
-    c.append('-exportProvisioningProfile')
-    c.append(optionMap[provisioningKey])
+    c.append('-exportOptionsPlist')
+    c.append(archivePlistPath)
     c.append('-exportPath')
     c.append(os.path.join(base_dir, 'Build/Unity-iPhone.ipa'))
     subprocess.check_call(c)

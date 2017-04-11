@@ -28,7 +28,14 @@ codeSingIdentityKey = 'code_sign_identity'
 @click.option('--archivePath', type=click.Path(exists=True), help='path to .xcodeproj or .xcworkspace')
 @click.option('--archiveOptionPath', type=click.Path(exists=True), help='path to .toml')
 @click.option('--archivePlistPath', type=click.Path(exists=True), help='path to .plist')
-def cmd(projectPath, platform, unityPath, archive, archivePath, archiveOptionPath, archivePlistPath):
+def cmd(projectpath, platform, unitypath, archive, archivepath, archiveoptionpath, archiveplistpath):
+    # 引数にキャメルケースをとれないという罠…
+    proejctPath = projectpath
+    unityPath = unitypath
+    archivePath  = archivepath
+    archiveOptionPath = archiveoptionpath
+    archivePlistPath = archiveplistpath
+
     if archive:
         archiveProject(archivePath, archiveOptionPath, archivePlistPath)
     else:

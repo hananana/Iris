@@ -28,14 +28,14 @@ codeSingIdentityKey = 'code_sign_identity'
 @click.option('--archivePath', type=click.Path(exists=True), help='path to .xcodeproj or .xcworkspace')
 @click.option('--archiveOptionPath', type=click.Path(exists=True), help='path to .toml')
 @click.option('--archivePlistPath', type=click.Path(exists=True), help='path to .plist')
-def cmd(projectPath, platform, unityPath, archive, archivePath, archiveOption, archivePlistPath):
+def cmd(projectPath, platform, unityPath, archive, archivePath, archiveOptionPath, archivePlistPath):
     if archive:
-        archiveProject(archivePath, archiveOption, archivePlistPath)
+        archiveProject(archivePath, archiveOptionPath, archivePlistPath)
     else:
         exportProject(projectPath, unityPath, platform)
 
 
-def archiveProject(archivePath, archiveOption, archivePlistPath):
+def archiveProject(archivePath, archiveOptionPath, archivePlistPath):
     absArchivePath = convertAbsPath(archivePath)
     projectName = os.path.basename(absArchivePath)
     name, ext = os.path.splitext(projectName)
@@ -44,7 +44,7 @@ def archiveProject(archivePath, archiveOption, archivePlistPath):
         logging.error('archivePath option must specify .xcworkspace or .xcodeproj')
         return
 
-    absArchiveOption = convertAbsPath(archiveOption)
+    absArchiveOption = convertAbsPath(archiveOptionPath)
     optionMap = toml.load(open(absArchiveOption))
 
     targetOption = ''

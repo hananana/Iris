@@ -30,7 +30,7 @@ codeSingIdentityKey = 'code_sign_identity'
 @click.option('--archivePlistPath', type=click.Path(exists=True), help='path to .plist')
 def cmd(projectpath, platform, unitypath, archive, archivepath, archiveoptionpath, archiveplistpath):
     # 引数にキャメルケースをとれないという罠…
-    proejctPath = projectpath
+    projectPath = projectpath
     unityPath = unitypath
     archivePath  = archivepath
     archiveOptionPath = archiveoptionpath

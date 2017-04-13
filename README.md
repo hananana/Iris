@@ -20,11 +20,12 @@ export iOS/Android project from unity by CLI.
 pip install git+https://github.com/hananana/iris.git
 ```
 
-## How to setup project
+## Setup Project
 
 ```sh
-PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install 3.6.0
-pyenv virtualenv 3.6.0 iris
-pyenv local iris
-pip install -r requirements.txt
+$ PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install 3.6.0
+$ pyenv virtualenv 3.6.0 iris
+$ pyenv local iris
+$ pip install -r requirements.txt
+$ pip install -e .
 ```

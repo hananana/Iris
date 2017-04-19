@@ -136,7 +136,10 @@ def check_platform(platform):
 def insertBuilderFile(projectPath):
     assets_dir = os.path.join(tempPath, 'Assets')
     editor_dir = os.path.join(assets_dir, 'Editor')
-    os.makedirs(editor_dir)
+
+    if not os.path.exists(editor_dir):
+        os.makedirs(editor_dir)
+
     os.chdir(editor_dir)
     stream = open('IrisBuilder.cs', 'w')
     stream.writelines('using System.Linq;\n')
